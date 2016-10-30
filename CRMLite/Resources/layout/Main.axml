@@ -12,7 +12,7 @@
             android:id="@+id/maUpPanelRL"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:background="@drawable/bottomline"
+            android:background="@drawable/bottomline4panel"
             android:layout_alignParentTop="true">
             <TextView
                 android:text="ИНФОРМАЦИЯ"
@@ -128,7 +128,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/topline">
+            android:background="@drawable/topline4panel">
             <TextView
                 android:text="СЕГОДНЯ ВИЗИТОВ: "
                 android:textAppearance="?android:attr/textAppearanceMedium"

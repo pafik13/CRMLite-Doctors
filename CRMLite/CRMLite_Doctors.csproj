@@ -210,27 +210,22 @@
     <AndroidResource Include="Resources\mipmap-hdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-mdpi\Icon.png" />
     <AndroidResource Include="Resources\values\Colors.xml" />
-    <AndroidResource Include="Resources\drawable-hdpi\bottomline.xml" />
     <AndroidResource Include="Resources\drawable-hdpi\ic_add_circle_outline_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-hdpi\ic_local_library_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-hdpi\splash_logo.png" />
     <AndroidResource Include="Resources\drawable-hdpi\splash_screen.xml" />
-    <AndroidResource Include="Resources\drawable-mdpi\bottomline.xml" />
     <AndroidResource Include="Resources\drawable-mdpi\ic_add_circle_outline_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-mdpi\ic_local_library_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-mdpi\splash_logo.png" />
     <AndroidResource Include="Resources\drawable-mdpi\splash_screen.xml" />
-    <AndroidResource Include="Resources\drawable-xhdpi\bottomline.xml" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_add_circle_outline_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_local_library_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\splash_logo.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\splash_screen.xml" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\bottomline.xml" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_add_circle_outline_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_local_library_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\splash_logo.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\splash_screen.xml" />
-    <AndroidResource Include="Resources\drawable-xxxhdpi\bottomline.xml" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\ic_add_circle_outline_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\ic_local_library_black_48dp.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\splash_logo.png" />
@@ -537,6 +532,8 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\ic_receipt_black_48dp.png" />
     <AndroidResource Include="Resources\layout\LibraryTableItem.axml" />
     <AndroidResource Include="Resources\layout\LibraryTableHeader.axml" />
+    <AndroidResource Include="Resources\drawable\bottomline4panel.xml" />
+    <AndroidResource Include="Resources\drawable\topline4panel.xml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

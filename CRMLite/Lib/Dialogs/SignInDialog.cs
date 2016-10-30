@@ -392,22 +392,6 @@ namespace CRMLite.Dialogs
 
 			var client = new RestClient(hostURL);
 
-			WriteInfo(@"Получение аптек", 1000);
-			try {
-				LoadEntities<Pharmacy>(client, access_token);
-			} catch (Exception ex) {
-				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
-				return false;
-			}
-
-			WriteInfo(@"Получение сотрудников", 1000);
-			try {
-				LoadEntities<Employee>(client, access_token);
-			} catch (Exception ex) {
-				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
-				return false;
-			}
-
 			WriteInfo(@"Получение LoadPositions", 1000);
 			try {
 				//LoadPositions(client);

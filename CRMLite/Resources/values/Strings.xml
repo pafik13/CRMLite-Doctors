@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="hello">Hello World, Click Me!</string>
-	<string name="app_name">CRMLite</string>
+	<string name="app_name">CRMLite_Doctors</string>
 	<string name="error_caption">Ошибка!</string>
 
 	<string name="IsFilterOn">IsFilterOn</string>

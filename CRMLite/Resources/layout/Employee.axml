@@ -9,7 +9,7 @@
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/bottomline">
+        android:background="@drawable/bottomline4panel">
         <TextView
             android:text="СОТРУДНИКИ АПТЕКИ {0}"
             android:textAppearance="?android:attr/textAppearanceMedium"

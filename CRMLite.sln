@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMLite", "CRMLite\CRMLite.csproj", "{BA6C903F-619A-4B9F-AF85-FCBC08A79919}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMLite_Doctors", "CRMLite\CRMLite_Doctors.csproj", "{BA6C903F-619A-4B9F-AF85-FCBC08A79919}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,12 +40,16 @@ Global
 		$0.NameConventionPolicy = $5
 		$5.Rules = $6
 		$6.NamingRule = $7
-		$7.Name = Namespaces
-		$7.AffectedEntity = Namespace
+		$7.Name = Type Parameters
+		$7.AffectedEntity = TypeParameter
 		$7.VisibilityMask = VisibilityMask
 		$7.NamingStyle = PascalCase
 		$7.IncludeInstanceMembers = True
 		$7.IncludeStaticEntities = True
+		$7.RequiredPrefixes = $29
+		$29.String = T
+		$7.RequiredSuffixes = $30
+		$30.String = Exception
 		$6.NamingRule = $8
 		$8.Name = Types
 		$8.AffectedEntity = Class, Struct, Enum, Delegate

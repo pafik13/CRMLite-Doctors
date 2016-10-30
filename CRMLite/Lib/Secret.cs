@@ -12,7 +12,7 @@
 		}
 
 		public static string HockeyappAppId {
-			get { return "c5a5b39231634cbbbd2068c7a1bd6d1d"; }
+			get { return "fcd353648a5c4c8e9b9e147e35fdf66e"; }
 		}
 
 		public static bool IsNeedReCreateDB

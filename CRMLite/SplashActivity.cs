@@ -8,7 +8,7 @@ using CRMLite.Dialogs;
 namespace CRMLite
 {
 	//https://forums.xamarin.com/discussion/19362/xamarin-forms-splashscreen-in-android
-	[Activity(Label = "CRMLite", Theme = "@style/MyTheme.Splash", Icon = "@mipmap/icon", MainLauncher = true, NoHistory = true)]
+	[Activity(Label = "CRMLite-Врачи", Theme = "@style/MyTheme.Splash", Icon = "@mipmap/icon", MainLauncher = true, NoHistory = true)]
 	public class SplashActivity : Activity
 	{
 		protected override void OnCreate (Bundle savedInstanceState)
