@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 using SDiag = System.Diagnostics;
 
-
 using Android.OS;
+using Android.Net;
 using Android.App;
 using Android.Views;
 using Android.Widget;
@@ -22,7 +22,6 @@ using HockeyApp.Android.Metrics;
 using CRMLite.Entities;
 using CRMLite.Adapters;
 using CRMLite.Dialogs;
-using Android.Net;
 
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.WriteExternalStorage)]
@@ -123,7 +122,7 @@ namespace CRMLite
 
 			var searchSettings = FindViewById<ImageView>(Resource.Id.maSearchSettingsIV);
 			searchSettings.Click += (sender, e) => {
-				Toast.MakeText(this, @"maSearchSettingsIV Clicked", ToastLength.Short).Show();
+				Toast.MakeText(this, "maSearchSettingsIV Clicked", ToastLength.Short).Show();
 			};
 
 			SearchInput = FindViewById<EditText>(Resource.Id.maSearchInput);
@@ -182,7 +181,7 @@ namespace CRMLite
 				filterDialog.AfterSaved += (caller, arguments) => {
 					GetSharedPreferences(FilterDialog.C_FILTER_PREFS, FileCreationMode.Private)
 						.Edit()
-						.PutBoolean(@"IS_ON", true)
+						.PutBoolean("IS_ON", true)
 						.Commit();
 
 					RecreateAdapter();
@@ -202,7 +201,7 @@ namespace CRMLite
 				var messageDialog = new MessageDialog();
 				messageDialog.Show(fragmentTransaction, MessageDialog.TAG);
 				messageDialog.AfterSaved += (caller, arguments) => {
-					Toast.MakeText(this, @"Message saved", ToastLength.Short).Show();
+					Toast.MakeText(this, "Message saved", ToastLength.Short).Show();
 				};
 			};
 
@@ -531,14 +530,12 @@ namespace CRMLite
 			}
 
 
+			var packageInfo = ApplicationContext.PackageManager.GetPackageInfo(ApplicationContext.PackageName, 0);
+			var version = string.Format("Версия: {0} ({1})", packageInfo.VersionName, packageInfo.VersionCode);
+			FindViewById<TextView>(Resource.Id.maVersionTV).Text = version;
+
 			var w = new SDiag.Stopwatch();
 			
-			// TODO: сделать ветку автоматической синхронизации
-			// w.Restart();
-			// StartService(new Intent(@"SyncService"));
-			// w.Stop();
-			// SDiag.Debug.WriteLine(@"SyncService: запуск={0}", w.ElapsedMilliseconds);
-
 		    w.Restart();
 			var currentRouteItems = MainDatabase.GetRouteItems(DateTimeOffset.Now);
 
@@ -566,7 +563,9 @@ namespace CRMLite
 			w.Restart();
 			int count = MainDatabase.GetItems<Attendance>()
 									.Count(att => att.When.LocalDateTime.Date == DateTimeOffset.Now.Date);
-			AttendanceCount.Text = string.Format(@"РЕЖИМ РАБОТЫ: {0};  СЕГОДНЯ ВИЗИТОВ: {1}", Helper.GetWorkModeDesc(Helper.WorkMode), count);
+			AttendanceCount.Text = string.Format(
+				@"РЕЖИМ РАБОТЫ: {0};  СЕГОДНЯ ВИЗИТОВ: {1}", Helper.GetWorkModeDesc(Helper.WorkMode), count
+			);
 			w.Stop();
 			SDiag.Debug.WriteLine(@"OnResume: подсчет визитов={0}", w.ElapsedMilliseconds);
 

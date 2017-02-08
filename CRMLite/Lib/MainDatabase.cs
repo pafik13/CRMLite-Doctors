@@ -238,10 +238,24 @@ namespace CRMLite
 			return Me.DB.All<T>().Single(item => item.UUID == uuid);
 		}
 
+		public static T GetEntityOrNull<T>(string uuid) where T : RealmObject, IEntity
+		{
+			return Me.DB.All<T>().SingleOrDefault(item => item.UUID == uuid);
+		}
+
 		public static void DeleteEntity<T>(string uuid) where T : RealmObject, IEntity
 		{
 			using (var trans = Me.DB.BeginWrite()) {
 				var item = GetEntity<T>(uuid);
+
+				if (item is RouteItem) {
+					var routeItem = item as RouteItem;
+					var excludeRouteItem = Me.DB.CreateObject<ExcludeRouteItem>();
+					excludeRouteItem.UUID = routeItem.UUID;
+					excludeRouteItem.CreatedAt = DateTimeOffset.Now;
+					excludeRouteItem.UpdatedAt = DateTimeOffset.Now;
+					excludeRouteItem.CreatedBy = string.IsNullOrEmpty(AgentUUID) ? @"AgentUUID is Empty" : AgentUUID;
+				}
 
 				Me.DB.Remove(item);
 
@@ -659,13 +673,44 @@ namespace CRMLite
 
 		internal static List<RouteItem> GetEarlyRouteItems(DateTimeOffset selectedDate)
 		{
-			var lowDate = selectedDate.AddDays(-7 * Helper.WeeksInRoute + 1).UtcDateTime.Date;
+			if (Helper.WeeksInRoute < 2) return new List<RouteItem>();
+
+			var lowDate = selectedDate.AddDays(-7 * Helper.WeeksInRoute + 8).UtcDateTime.Date;
 			var highDate = selectedDate.AddDays(-1).UtcDateTime.Date;
 
 			return Me.DB.All<RouteItem>()
 				     .ToList()
 					 .Where(ri => highDate >= ri.Date.Date && ri.Date.Date >= lowDate)
 				     .ToList();
+		}
+
+
+		internal static List<RouteItem> GetEarlyPerfomedRouteItems(DateTimeOffset selectedDate)
+		{
+			int capacity = Helper.WeeksInRoute * 20 * 5;
+			var result = new List<RouteItem>(capacity);
+
+			if (Helper.WeeksInRoute < 2) return result;
+
+			var lowDate = selectedDate.AddDays(-7 * Helper.WeeksInRoute + 8).UtcDateTime.Date;
+			var highDate = selectedDate.AddDays(-1).UtcDateTime.Date;
+
+			var pharmaciesUUIDs = new List<string>(capacity);
+			foreach (var item in Me.DB.All<Attendance>()) {
+				if (highDate >= item.When.Date && item.When.Date >= lowDate) {
+					pharmaciesUUIDs.Add(item.Pharmacy);
+				}
+			}
+
+			foreach (var item in Me.DB.All<RouteItem>()) {
+				if (highDate >= item.Date.Date && item.Date.Date >= lowDate) {
+					if (pharmaciesUUIDs.Contains(item.Pharmacy)) {
+						result.Add(item);
+					}
+				}
+			}
+
+			return result;
 		}
 
 		internal static List<RouteItem> GetRouteItems(DateTimeOffset selectedDate)
@@ -712,17 +757,7 @@ namespace CRMLite
 						result[attendance.Pharmacy][key]++;
 					}
 				} else {
-					HockeyApp.MetricsManager.TrackEvent(
-						"MainDatabase.GetProfileReportData",
-						new Dictionary<string, string> { 
-							{ "UUID", attendance.UUID },
-							{ "Pharmacy", attendance.Pharmacy },
-							{ "date", d.ToLongDateString() },
-							{ "android_id", Helper.AndroidId },
-							{ "agent_uuid", AgentUUID }
-						},
-						new Dictionary<string, double> { { "key", key } }
-					);
+					System.Diagnostics.Debug.WriteLine(string.Concat("GetProfileReportData:KeyNotFound:Pharmacy:", attendance.Pharmacy));
 				}
 			}
 			

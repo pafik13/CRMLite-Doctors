@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Diagnostics;
+using SDiag = System.Diagnostics;
 using System.Globalization;
 using System.Collections.Generic;
 
@@ -160,7 +160,7 @@ namespace CRMLite
 					return;
 				}
 
-				var w = new Stopwatch();
+				var w = new SDiag.Stopwatch();
 				w.Start();
 				SearchedItems = new List<RouteSearchItem>();
 				var matchFormat = @"Совпадение: {0}";
@@ -199,7 +199,7 @@ namespace CRMLite
 					}
 				}
 				w.Stop();
-				System.Diagnostics.Debug.WriteLine(@"Search: поиск={0}", w.ElapsedMilliseconds);
+				SDiag.Debug.WriteLine(@"Search: поиск={0}", w.ElapsedMilliseconds);
 
 				PharmacyTable.Adapter = new RoutePharmacyAdapter(this, SearchedItems);
 			};
@@ -208,8 +208,8 @@ namespace CRMLite
 
 			FindViewById<Button>(Resource.Id.raSelectDateB).Click += (sender, e) => {
 				DatePickerFragment frag = DatePickerFragment.NewInstance(delegate (DateTime date) {
-					System.Diagnostics.Debug.WriteLine("DatePicker:{0}", date.ToLongDateString());
-					System.Diagnostics.Debug.WriteLine("DatePicker:{0}", new DateTimeOffset(date));
+					SDiag.Debug.WriteLine("DatePicker:{0}", date.ToLongDateString());
+					SDiag.Debug.WriteLine("DatePicker:{0}", new DateTimeOffset(date));
 					SelectedDate = new DateTimeOffset(date, new TimeSpan(0, 0, 0)); ;
 					RefreshTables();
 				});
@@ -221,7 +221,7 @@ namespace CRMLite
 
 			var switcher = FindViewById<ViewSwitcher>(Resource.Id.raSwitchViewVS);
 			FindViewById<ImageView>(Resource.Id.raSwitchIV).Click += (sender, e) => {
-				System.Diagnostics.Debug.WriteLine(@"switcher:{0}; Resource{1}", switcher.CurrentView.Id, Resource.Id.raContainerVP);
+				SDiag.Debug.WriteLine(@"switcher:{0}; Resource{1}", switcher.CurrentView.Id, Resource.Id.raContainerVP);
 				if (switcher.CurrentView.Id != Resource.Id.raContainerVP) {
 					Info.Text = string.Format(
 						@"Период планирования: {0} недели ({1} дней). Номер недели: {2}",
@@ -243,7 +243,7 @@ namespace CRMLite
 
 			var rowForDelete = (LinearLayout)((ImageView)sender).Parent;
 
-			string routeItemUUID = (string)rowForDelete.GetTag(Resource.String.RouteItemUUID);
+			var routeItemUUID = (string)rowForDelete.GetTag(Resource.String.RouteItemUUID);
 			MainDatabase.DeleteEntity<RouteItem>(routeItemUUID);
 
 			int pos = (int) rowForDelete.GetTag(Resource.String.Position);
@@ -257,6 +257,8 @@ namespace CRMLite
 					routeItemUUID = (string)rowForUpdate.GetTag(Resource.String.RouteItemUUID);
 					var updRouteItem = MainDatabase.GetEntity<RouteItem>(routeItemUUID);
 					updRouteItem.Order = c;
+					updRouteItem.IsSynced = false;
+					updRouteItem.UpdatedAt = DateTimeOffset.Now;
 					rowForUpdate.SetTag(Resource.String.RouteItemOrder, c);
 					rowForUpdate.FindViewById<TextView>(Resource.Id.riOrderTV).Text = (c + 1).ToString();
 				}
@@ -314,6 +316,8 @@ namespace CRMLite
 									string routeItemUUID = (string)rowForUpdate.GetTag(Resource.String.RouteItemUUID);
 									var updRouteItem = MainDatabase.GetEntity<RouteItem>(routeItemUUID);
 									updRouteItem.Order = c;
+									updRouteItem.IsSynced = false;
+									updRouteItem.UpdatedAt = DateTimeOffset.Now;
 									rowForUpdate.SetTag(Resource.String.RouteItemOrder, c);
 									rowForUpdate.FindViewById<TextView>(Resource.Id.riOrderTV).Text = (c + 1).ToString();
 								}
@@ -342,20 +346,35 @@ namespace CRMLite
 		{
 			FindViewById<Button>(Resource.Id.raSelectDateB).Text = SelectedDate.Date.ToLongDateString();
 
-			var routeItemsPharmacies = MainDatabase.GetEarlyRouteItems(SelectedDate).Select(ri => ri.Pharmacy);
-			RouteSearchItems = RouteSearchItemsSource.Where(rsi => !routeItemsPharmacies.Contains(rsi.UUID)).ToList(); 
+			if (SelectedDate.Date <= DateTimeOffset.Now.Date) {
+				RouteSearchItems = new List<RouteSearchItem>();
+				RoutePharmacyAdapter = new RoutePharmacyAdapter(this, RouteSearchItems);
+				PharmacyTable.Adapter = RoutePharmacyAdapter;
+			} else {
+				//var sw = new SDiag.Stopwatch();
+				//sw.Start();
+				var routeItemsPharmacies = MainDatabase.GetEarlyPerfomedRouteItems(SelectedDate).Select(ri => ri.Pharmacy);
+				RouteSearchItems = RouteSearchItemsSource.Where(rsi => !routeItemsPharmacies.Contains(rsi.UUID)).ToList();
+				//sw.Stop();
+				//SDiag.Debug.WriteLine(@"RouteSearchItems (ms): {0}, routeItemsPharmacies (cnt): {1}", sw.ElapsedMilliseconds, routeItemsPharmacies.Count());
 
-			RoutePharmacyAdapter = new RoutePharmacyAdapter(this, RouteSearchItems);
-			PharmacyTable.Adapter = RoutePharmacyAdapter;
+				RoutePharmacyAdapter = new RoutePharmacyAdapter(this, RouteSearchItems);
+				PharmacyTable.Adapter = RoutePharmacyAdapter;
 
-			for (int i = 0; i < RouteSearchItems.Count; i++) {
-				RoutePharmacyAdapter.ChangeVisibility(i, true);
+				for (int i = 0; i < RouteSearchItems.Count; i++) {
+					RoutePharmacyAdapter.ChangeVisibility(i, true);
+				}
 			}
 
 			RouteTable.RemoveAllViews();
 			foreach (var item in MainDatabase.GetRouteItems(SelectedDate).OrderBy(ri => ri.Order)) {
 				var row = LayoutInflater.Inflate(Resource.Layout.RouteItem, RouteTable, false);
-				row.FindViewById<TextView>(Resource.Id.riPharmacyTV).Text = MainDatabase.GetEntity<Pharmacy>(item.Pharmacy).GetName();
+				var pharmacy = MainDatabase.GetEntityOrNull<Pharmacy>(item.Pharmacy);
+				if (pharmacy == null) {
+					row.FindViewById<TextView>(Resource.Id.riPharmacyTV).Text = "<аптека не найдена>";
+				} else {
+					row.FindViewById<TextView>(Resource.Id.riPharmacyTV).Text = pharmacy.GetName();
+				}
 
 				int position = RouteSearchItems.FindIndex(rsi => string.Compare(rsi.UUID, item.Pharmacy) == 0);
 				if (position != -1) {
@@ -377,11 +396,12 @@ namespace CRMLite
 				if (SelectedDate > new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, new TimeSpan(0, 0, 0))) {
 					delImage.Click += RowDelete_Click;
 					delImage.Visibility = ViewStates.Visible;
-					row.LongClick += Row_LongClick;
-					row.Drag += Row_Drag;
 				} else {
 					delImage.Visibility = ViewStates.Gone;
 				}
+
+				row.LongClick += Row_LongClick;
+				row.Drag += Row_Drag;
 
 				RouteTable.AddView(row);
 			}
