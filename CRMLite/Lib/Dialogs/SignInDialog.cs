@@ -392,6 +392,22 @@ namespace CRMLite.Dialogs
 
 			var client = new RestClient(hostURL);
 
+			WriteInfo(@"Получение аптек", 1000);
+			try {
+				LoadEntities<Pharmacy>(client, access_token);
+			} catch (Exception ex) {
+				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
+				return false;
+			}
+
+			WriteInfo(@"Получение сотрудников", 1000);
+			try {
+				LoadEntities<Employee>(client, access_token);
+			} catch (Exception ex) {
+				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
+				return false;
+			}
+
 			WriteInfo(@"Получение LoadPositions", 1000);
 			try {
 				//LoadPositions(client);
@@ -446,10 +462,12 @@ namespace CRMLite.Dialogs
 				return false;
 			}
 
+			string drugWhere = @"where={""isActive"":true}";
+
 			WriteInfo(@"Получение LoadDrugSKUs", 1000);
 			try {
 				//LoadDrugSKUs(client);
-				LoadItems<DrugSKU>(client, 300);
+				LoadItems<DrugSKU>(client, 300, drugWhere);
 			} catch (Exception ex) {
 				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
 				return false;
@@ -458,7 +476,7 @@ namespace CRMLite.Dialogs
 			WriteInfo(@"Получение LoadDrugBrands", 1000);
 			try {
 				//LoadDrugBrands(client);
-				LoadItems<DrugBrand>(client, 300);
+				LoadItems<DrugBrand>(client, 300, drugWhere);
 			} catch (Exception ex) {
 				WriteWarning(string.Format(@"Error: {0}", ex.Message), 2000);
 				return false;
@@ -699,40 +717,48 @@ namespace CRMLite.Dialogs
 			}
 		}
 
-		void LoadItems<T>(RestClient client, int limit, string customQueryParams = "") where T: Realms.RealmObject
+		void LoadItems<T>(RestClient client, int limit, string customQueryParams = "") where T : Realms.RealmObject
 		{
-			Console.WriteLine(@"LoadItems: typeof={0}", typeof(T));
+			SD.Debug.WriteLine("LoadItems: typeof={0}", typeof(T));
 			string className = typeof(T).Name;
-			string path = string.Format(@"{0}?limit={1}&populate=false&{2}", className, limit, customQueryParams);
+			string path = string.Format("{0}?limit={1}&populate=false&{2}", className, limit, customQueryParams);
 			var request = new RestRequest(path, Method.GET);
 			var response = client.Execute<List<T>>(request);
-			if (response.StatusCode == HttpStatusCode.OK) {
-				Console.WriteLine(@"LoadItems: Data.Count={0}", response.Data.Count);
-				using (var trans = MainDatabase.BeginTransaction()) {
-					MainDatabase.DeleteAll<T>(trans);
-					MainDatabase.SaveItems(trans, response.Data);
-					trans.Commit();
+			using (var trans = MainDatabase.BeginTransaction()) {
+				MainDatabase.DeleteAll<T>(trans);
+				if (response.StatusCode == HttpStatusCode.OK) {
+					if (response.Data == null) {
+						SD.Debug.WriteLine("LoadItems: Data=NULL");
+					} else {
+						SD.Debug.WriteLine("LoadItems: Data.Count={0}", response.Data.Count);
+						MainDatabase.SaveItems(trans, response.Data);
+					}
 				}
+				trans.Commit();
 			}
-			Console.WriteLine(@"LoadItems: Done");
+			SD.Debug.WriteLine("LoadItems: Done");
 		}
 
 		void LoadEntities<T>(RestClient client, string access_token) where T : Realms.RealmObject, IEntity, ISync
 		{
-			Console.WriteLine(@"LoadEntities: typeof={0}", typeof(T));
+			SD.Debug.WriteLine("LoadEntities: typeof={0}", typeof(T));
 			string className = typeof(T).Name;
-			string path = string.Format(@"{0}/byjwt?access_token={1}", className, access_token);
+			string path = string.Format("{0}/byjwt?access_token={1}", className, access_token);
 			var request = new RestRequest(path, Method.GET);
 			var response = client.Execute<List<T>>(request);
-			if (response.StatusCode == HttpStatusCode.OK) {
-				Console.WriteLine(@"LoadEntities: Data.Count={0}", response.Data.Count);
-				using (var trans = MainDatabase.BeginTransaction()) {
-					MainDatabase.DeleteAll<T>(trans);
-					MainDatabase.SaveEntities(trans, response.Data);
-					trans.Commit();
+			using (var trans = MainDatabase.BeginTransaction()) {
+				MainDatabase.DeleteAll<T>(trans);
+				if (response.StatusCode == HttpStatusCode.OK) {
+					if (response.Data == null) {
+						SD.Debug.WriteLine("LoadEntities: Data=NULL");
+					} else {
+						SD.Debug.WriteLine("LoadEntities: Data.Count={0}", response.Data.Count);
+						MainDatabase.SaveEntities(trans, response.Data);
+					}
 				}
+				trans.Commit();
 			}
-			Console.WriteLine(@"LoadEntities: Done");
+			SD.Debug.WriteLine("LoadEntities: Done");
 		}
 
 		void LoadNets(RestClient client)
